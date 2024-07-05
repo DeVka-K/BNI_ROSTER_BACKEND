@@ -1,8 +1,25 @@
+// import { NestFactory } from '@nestjs/core';
+// import { AppModule } from './app.module';
+
+// async function bootstrap() {
+//   const app = await NestFactory.create(AppModule);
+//   await app.listen(3001);
+// }
+// bootstrap();
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import * as cors from 'cors';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  await app.listen(3000);
+
+  // Enable CORS
+  app.use(cors());
+
+  await app.listen(5000); // Change port number here
 }
+
 bootstrap();
+
+
+

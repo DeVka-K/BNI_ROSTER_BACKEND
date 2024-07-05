@@ -20,18 +20,38 @@ export class JsonToPdfService {
   }
 
   async createPdf(jsonData: any): Promise<string> {
-    const event = new JsonToPdfCreatedEvent(jsonData);
-    // Generate PDF
-    const doc = new PDFDocument();
-    const filePath = path.join(__dirname, '../../../pdfs', 'output.pdf');
-    doc.pipe(fs.createWriteStream(filePath));
-
-    // Add content to PDF (customize this part based on your JSON structure)
-    doc.text(JSON.stringify(jsonData, null, 2));
-    
-    doc.end();
-
-    // Return the file path or URL for preview
-    return filePath;
+    return new Promise((resolve, reject) => {
+      try {
+        const doc = new PDFDocument();
+        const filePath = path.join(__dirname, '../../../pdfs', `output_${Date.now()}.pdf`);
+        console.log('Creating PDF at:', filePath);
+  
+        // Ensure the directory exists
+        const dir = path.dirname(filePath);
+        if (!fs.existsSync(dir)) {
+          fs.mkdirSync(dir, { recursive: true });
+        }
+  
+        const writeStream = fs.createWriteStream(filePath);
+        doc.pipe(writeStream);
+  
+        // Add content to PDF (customize this part based on your JSON structure)
+        doc.text(JSON.stringify(jsonData, null, 2));
+        
+        doc.end();
+  
+        writeStream.on('finish', () => {
+          console.log('PDF creation finished');
+          resolve(filePath);
+        });
+        writeStream.on('error', (error) => {
+          console.error('Error writing PDF:', error);
+          reject(error);
+        });
+      } catch (error) {
+        console.error('Error in createPdf:', error);
+        reject(error);
+      }
+    });
   }
 }

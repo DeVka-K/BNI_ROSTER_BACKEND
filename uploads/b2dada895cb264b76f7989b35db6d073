@@ -1,0 +1,3 @@
+chapterName,location,memberSize,regionalRank,allIndiaRank,globalRank,chapterLogo,name,companyName,email,phone,category,photo,companyLogo
+Chapter A,Location A,10,1,5,10,logo1.jpg,John Doe,Company A,john@example.com,1234567890,Category A,,logo_company_a.png
+Chapter B,Location B,15,2,8,15,logo2.jpg,Jane Smith,Company B,jane@example.com,9876543210,Category B,,logo_company_b.png

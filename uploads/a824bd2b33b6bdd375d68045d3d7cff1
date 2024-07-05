@@ -1,0 +1,5 @@
+chapterName,location,memberSize,regionalRank,allIndiaRank,globalRank,chapterLogo,name,companyName,email,phone,category,photo,companyLogo
+"Chapter One","Location One",50,1,5,10,"logo1.png","John Doe","Company One","john.doe@example.com","1234567890","Category A","photo1.png","companyLogo1.png"
+"Chapter One","Location One",50,1,5,10,"logo1.png","Jane Smith","Company Two","jane.smith@example.com","0987654321","Category B","photo2.png","companyLogo2.png"
+"Chapter Two","Location Two",30,2,10,20,"logo2.png","Alice Johnson","Company Three","alice.johnson@example.com","1122334455","Category C","photo3.png","companyLogo3.png"
+"Chapter Two","Location Two",30,2,10,20,"logo2.png","Bob Brown","Company Four","bob.brown@example.com","5566778899","Category D","photo4.png","companyLogo4.png"

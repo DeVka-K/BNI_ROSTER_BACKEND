@@ -112,21 +112,21 @@ export class ConvertCsvHandler implements ICommandHandler<ConvertCsvCommand> {
           if (!chapterData.chapterName) {
             chapterData.chapterName = record.chapterName;
             chapterData.location = record.location;
-            chapterData.memberSize = parseInt(record.memberSize);
-            chapterData.regionalRank = parseInt(record.regionalRank);
-            chapterData.allIndiaRank = parseInt(record.allIndiaRank);
-            chapterData.globalRank = parseInt(record.globalRank);
-            chapterData.chapterLogo = record.chapterLogo;
+            chapterData.memberSize = parseInt(record.memberSize) || 0;
+            chapterData.regionalRank = parseInt(record.regionalRank) || 0;
+            chapterData.allIndiaRank = parseInt(record.allIndiaRank) || 0;
+            chapterData.globalRank = parseInt(record.globalRank) || 0;
+            chapterData.chapterLogo = record.chapterLogo || '';
           }
 
           const member: MemberData = {
-            name: record.name,
-            companyName: record.companyName,
-            email: record.email,
-            phone: record.phone,
-            category: record.category,
-            photo: record.photo,
-            companyLogo: record.companyLogo,
+            name: record.name || '',
+            companyName: record.companyName || '',
+            email: record.email || '',
+            phone: record.phone || '',
+            category: record.category || '',
+            photo: record.photo || '',
+            companyLogo: record.companyLogo || '',
           };
           chapterData.members.push(member);
         }
@@ -140,8 +140,15 @@ export class ConvertCsvHandler implements ICommandHandler<ConvertCsvCommand> {
         resolve(chapterData);
       });
 
-      parser.write(file.buffer);
+      // Ensure file.buffer is accessible and contains the CSV data
+      if (file && file.buffer) {
+        parser.write(file.buffer);
+      } else {
+        reject(new Error('File buffer is missing or empty'));
+      }
+
       parser.end();
     });
   }
 }
+

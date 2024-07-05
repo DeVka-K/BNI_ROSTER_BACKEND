@@ -1,4 +1,4 @@
-import { Controller, Post, UploadedFile, UseInterceptors, Res, Get, Param, Req, BadRequestException } from '@nestjs/common';
+import { Controller, Post, UploadedFile, UseInterceptors, Res, Get, Param, Req } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import * as path from 'path';
@@ -10,7 +10,7 @@ import { JsonToPdfService } from './json-to-pdf.service';
 export class JsonToPdfController {
   constructor(private readonly jsonToPdfService: JsonToPdfService) {}
 
-  @Post('upload')
+  @Post('upload') // <-- Ensure this path matches the route you're accessing in Postman
   @UseInterceptors(FileInterceptor('file', {
     storage: diskStorage({
       destination: './uploads',
@@ -23,34 +23,20 @@ export class JsonToPdfController {
   }))
   async uploadFile(@UploadedFile() file: Express.Multer.File, @Req() req: Request, @Res() res: Response) {
     try {
-      if (!file) {
-        throw new BadRequestException('No file uploaded');
-      }
-
-      // Validate if there are unexpected fields in the JSON
-      const jsonData = JSON.parse(fs.readFileSync(file.path, 'utf8'));
-      const allowedFields = ['name', 'companyName', 'phoneNumber', 'email', 'businessType'];
-      const unexpectedFields = Object.keys(jsonData).filter(field => !allowedFields.includes(field));
-      if (unexpectedFields.length > 0) {
-        throw new BadRequestException(`Unexpected field(s) found: ${unexpectedFields.join(', ')}`);
-      }
-
       console.log('File received:', file);
+      const jsonData = JSON.parse(fs.readFileSync(file.path, 'utf8'));
       console.log('Parsed JSON data:', jsonData);
-
       const pdfFilename = await this.jsonToPdfService.createPdf(jsonData);
       console.log('PDF created:', pdfFilename);
-
       const previewUrl = `${req.protocol}://${req.get('host')}/api/json-to-pdf/preview/${pdfFilename}`;
       const downloadUrl = `${req.protocol}://${req.get('host')}/api/json-to-pdf/download/${pdfFilename}`;
-
       return res.json({ message: 'PDF created successfully', previewUrl, downloadUrl });
     } catch (error) {
       console.error('Error in uploadFile:', error);
       res.status(500).json({ message: `Internal server error: ${error.message}` });
     }
   }
-
+  
   @Get('preview/:filename')
   async previewFile(@Param('filename') filename: string, @Res() res: Response) {
     const filePath = path.join(__dirname, '../../../pdfs', filename);
@@ -71,3 +57,4 @@ export class JsonToPdfController {
     }
   }
 }
+

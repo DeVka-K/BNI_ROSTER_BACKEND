@@ -82,31 +82,29 @@
 //   }
 // }
 
-import { Controller, Post, UseInterceptors, UploadedFile, Get, Param, Res } from '@nestjs/common';
+import { Controller, Post, UseInterceptors, UploadedFile, Get, Param, Res, HttpException, HttpStatus } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CsvService } from './csv.service';
 import { CreateCsvDto } from './dto/create-csv.dto';
 import { Response } from 'express';
-import { CommandBus } from '@nestjs/cqrs';
-import { ConvertCsvCommand } from './commands/convert-csv.command';
+import * as multer from 'multer';
 
 @Controller('csv')
 export class CsvController {
-  constructor(
-    private readonly csvService: CsvService,
-    private readonly commandBus: CommandBus
-  ) {}
+  constructor(private readonly csvService: CsvService) {}
 
   @Post('upload')
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(FileInterceptor('file', {
+    storage: multer.memoryStorage(),
+  }))
   async uploadFile(@UploadedFile() file: Express.Multer.File) {
-    if (!file || !file.buffer) {
-      throw new Error('No file uploaded or file buffer is empty');
+    if (!file) {
+      throw new HttpException('No file uploaded or file buffer is empty', HttpStatus.BAD_REQUEST);
     }
     const createCsvDto = new CreateCsvDto();
     createCsvDto.file = file;
-    await this.commandBus.execute(new ConvertCsvCommand(file));
-    return { message: 'File uploaded and processed successfully' };
+    const result = await this.csvService.create(createCsvDto);
+    return { message: 'File uploaded and processed successfully', pdfId: result.pdfId };
   }
 
   @Get('preview/:id')

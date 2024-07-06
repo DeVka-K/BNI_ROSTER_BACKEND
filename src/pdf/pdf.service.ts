@@ -131,6 +131,85 @@
 //     }
 //   }
 // }
+// import { Injectable } from '@nestjs/common';
+// import * as fs from 'fs';
+// import * as path from 'path';
+// import PDFDocument from 'pdfkit';
+// import { ChapterData, MemberData } from '../shared/interfaces/chapter-data.interface';
+
+// @Injectable()
+// export class PDFService {
+//   async generatePDF(data: ChapterData): Promise<string> {
+//     const pdfPath = path.join(__dirname, 'example.pdf');
+//     const doc = new PDFDocument();
+//     const stream = fs.createWriteStream(pdfPath);
+
+//     doc.pipe(stream);
+
+//     // Add chapter details
+//     doc.fontSize(18).text(`Chapter: ${data.chapterName}`, 50, 50);
+//     doc.fontSize(12).text(`Location: ${data.location}`, 50, 80);
+//     doc.fontSize(12).text(`Member Size: ${data.memberSize}`, 50, 100);
+//     doc.fontSize(12).text(`Regional Rank: ${data.regionalRank}`, 50, 120);
+//     doc.fontSize(12).text(`All India Rank: ${data.allIndiaRank}`, 50, 140);
+//     doc.fontSize(12).text(`Global Rank: ${data.globalRank}`, 50, 160);
+
+//     // Add chapter logo
+//     if (data.chapterLogo) {
+//       const logoPath = path.join(__dirname, data.chapterLogo);
+//       console.log(`Processing chapter logo: ${logoPath}`);
+//       if (fs.existsSync(logoPath)) {
+//         doc.image(logoPath, doc.page.width - 100, 50, { width: 80, height: 80 });
+//       } else {
+//         console.warn(`Chapter logo not found at path: ${logoPath}`);
+//       }
+//     }
+
+//     // Add member details
+//     let yOffset = 200;
+//     for (const member of data.members) {
+//       this.addMemberToPDF(doc, member, yOffset);
+//       yOffset += 100;
+//       if (yOffset > doc.page.height - 50) {
+//         doc.addPage();
+//         yOffset = 50;
+//       }
+//     }
+
+//     doc.end();
+
+//     return pdfPath;
+//   }
+
+//   private addMemberToPDF(doc: PDFDocument, member: MemberData, yOffset: number) {
+//     doc.fontSize(12).text(`Name: ${member.name}`, 50, yOffset);
+//     doc.fontSize(12).text(`Company: ${member.companyName}`, 50, yOffset + 20);
+//     doc.fontSize(12).text(`Email: ${member.email}`, 50, yOffset + 40);
+//     doc.fontSize(12).text(`Phone: ${member.phone}`, 50, yOffset + 60);
+//     doc.fontSize(12).text(`Category: ${member.category}`, 50, yOffset + 80);
+
+//     // Add member photo and company logo if available
+//     if (member.photo) {
+//       const photoPath = path.join(__dirname, member.photo);
+//       console.log(`Processing member photo: ${photoPath}`);
+//       if (fs.existsSync(photoPath)) {
+//         doc.image(photoPath, 300, yOffset + 60, { width: 60, height: 60 });
+//       } else {
+//         console.warn(`Photo not found at path: ${photoPath}`);
+//       }
+//     }
+//     if (member.companyLogo) {
+//       const logoPath = path.join(__dirname, member.companyLogo);
+//       console.log(`Processing company logo: ${logoPath}`);
+//       if (fs.existsSync(logoPath)) {
+//         doc.image(logoPath, 400, yOffset + 60, { width: 60, height: 60 });
+//       } else {
+//         console.warn(`Company logo not found at path: ${logoPath}`);
+//       }
+//     }
+//   }
+// }
+
 
 import { Injectable } from '@nestjs/common';
 import * as fs from 'fs';
@@ -141,7 +220,7 @@ import { ChapterData, MemberData } from '../shared/interfaces/chapter-data.inter
 @Injectable()
 export class PDFService {
   async generatePDF(data: ChapterData): Promise<string> {
-    const pdfPath = path.join(__dirname, 'example.pdf');
+    const pdfPath = path.join(__dirname, '../../uploads/example.pdf');
     const doc = new PDFDocument();
     const stream = fs.createWriteStream(pdfPath);
 
@@ -155,10 +234,15 @@ export class PDFService {
     doc.fontSize(12).text(`All India Rank: ${data.allIndiaRank}`, 50, 140);
     doc.fontSize(12).text(`Global Rank: ${data.globalRank}`, 50, 160);
 
-    // Add chapter logo
+    // Add chapter logo if available
     if (data.chapterLogo) {
-      const logoPath = path.join(__dirname, data.chapterLogo);
-      doc.image(logoPath, doc.page.width - 100, 50, { width: 80, height: 80 });
+      const logoPath = path.join(__dirname, '../../uploads/images', data.chapterLogo);
+      console.log(`Processing chapter logo: ${logoPath}`);
+      if (fs.existsSync(logoPath)) {
+        doc.image(logoPath, doc.page.width - 100, 50, { width: 80, height: 80 });
+      } else {
+        console.warn(`Chapter logo not found at path: ${logoPath}`);
+      }
     }
 
     // Add member details
@@ -184,15 +268,29 @@ export class PDFService {
     doc.fontSize(12).text(`Phone: ${member.phone}`, 50, yOffset + 60);
     doc.fontSize(12).text(`Category: ${member.category}`, 50, yOffset + 80);
 
-    // Add member photo and company logo if available
+    // Add member photo if available
     if (member.photo) {
-      const photoPath = path.join(__dirname, member.photo);
-      doc.image(photoPath, 300, yOffset + 60, { width: 60, height: 60 });
+      const photoPath = path.join(__dirname, '../../uploads/images', member.photo);
+      console.log(`Processing member photo: ${photoPath}`);
+      if (fs.existsSync(photoPath)) {
+        doc.image(photoPath, 300, yOffset + 60, { width: 60, height: 60 });
+      } else {
+        console.warn(`Photo not found at path: ${photoPath}`);
+      }
     }
+
+    // Add company logo if available
     if (member.companyLogo) {
-      const logoPath = path.join(__dirname, member.companyLogo);
-      doc.image(logoPath, 400, yOffset + 60, { width: 60, height: 60 });
+      const logoPath = path.join(__dirname, '../../uploads/images', member.companyLogo);
+      console.log(`Processing company logo: ${logoPath}`);
+      if (fs.existsSync(logoPath)) {
+        doc.image(logoPath, 400, yOffset + 60, { width: 60, height: 60 });
+      } else {
+        console.warn(`Company logo not found at path: ${logoPath}`);
+      }
     }
   }
 }
+
+
 

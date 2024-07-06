@@ -1,0 +1,29 @@
+[
+  {
+    "name": "John Doe",
+    "companyName": "ABC Inc.",
+    "phoneNumber": "+1234567890",
+    "email": "john.doe@example.com",
+    "businessType": "Technology",
+    "logoUrl": "logoimages.png",
+    "photoUrl": "PersonPicture.jpg"
+  },
+  {
+    "name": "Jane Smith",
+    "companyName": "XYZ Corp.",
+    "phoneNumber": "+1987654321",
+    "email": "jane.smith@example.com",
+    "businessType": "Finance",
+    "logoUrl": "logoimages.png",
+    "photoUrl": "PersonPicture.jpg"
+  },
+  {
+    "name": "Michael Johnson",
+    "companyName": "123 Industries",
+    "phoneNumber": "+1122334455",
+    "email": "michael.johnson@example.com",
+    "businessType": "Manufacturing",
+    "logoUrl": "logoimages.png",
+    "photoUrl": "PersonPicture.jpg"
+  }
+]

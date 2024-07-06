@@ -24,7 +24,13 @@ export class JsonToPdfController {
   async uploadFile(@UploadedFile() file: Express.Multer.File, @Req() req: Request, @Res() res: Response) {
     try {
       console.log('File received:', file);
-      const jsonData = JSON.parse(fs.readFileSync(file.path, 'utf8'));
+      let jsonData;
+      try {
+        jsonData = JSON.parse(fs.readFileSync(file.path, 'utf8'));
+      } catch (parseError) {
+        console.error('Error parsing JSON:', parseError);
+        return res.status(400).json({ message: 'Invalid JSON format' });
+      }
       console.log('Parsed JSON data:', jsonData);
       const pdfFilename = await this.jsonToPdfService.createPdf(jsonData);
       console.log('PDF created:', pdfFilename);

@@ -1,0 +1,38 @@
+[
+  {
+    "name": "John Doe",
+    "companyName": "ABC Inc.",
+    "phoneNumber": "+1234567890",
+    "email": "john.doe@example.com",
+    "businessType": "Technology",
+    "logoUrl": "logoimages.png",
+    "photoUrl": "PersonPicture.jpg"
+  },
+  {
+    "name": "Jane Smith",
+    "companyName": "XYZ Corp.",
+    "phoneNumber": "+0987654321",
+    "email": "jane.smith@example.com",
+    "businessType": "Healthcare",
+    "logoUrl": "logoimages2.png",
+    "photoUrl": "PersonPicture2.jpg"
+  },
+  {
+    "name": "Alice Brown",
+    "companyName": "LMN Inc.",
+    "phoneNumber": "+1928374650",
+    "email": "alice.brown@example.com",
+    "businessType": "Finance",
+    "logoUrl": "logoimages3.png",
+    "photoUrl": "PersonPicture3.jpg"
+  },
+  {
+    "name": "Bob White",
+    "companyName": "OPQ Corp.",
+    "phoneNumber": "+1234567891",
+    "email": "bob.white@example.com",
+    "businessType": "Education",
+    "logoUrl": "logoimages4.png",
+    "photoUrl": "PersonPicture4.jpg"
+  }
+]

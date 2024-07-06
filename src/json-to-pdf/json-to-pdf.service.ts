@@ -60,23 +60,28 @@ export class JsonToPdfService {
           }
         };
   
-        // Add two business cards per page
-        addBusinessCard(jsonData, 50, 50);
-        addBusinessCard(jsonData, 50, 400);
-  
-        doc.end();
-  
-        writeStream.on('finish', () => {
-          console.log('PDF creation finished');
-          resolve(filename);
-        });
-        writeStream.on('error', (error) => {
-          console.error('Error writing PDF:', error);
-          reject(error);
-        });
-      } catch (error) {
-        console.error('Error in createPdf:', error);
+        const dataArray = Array.isArray(jsonData) ? jsonData : [jsonData];
+      dataArray.forEach((data, index) => {
+        if (index > 0 && index % 2 === 0) {
+          doc.addPage(); // Add a new page every two cards
+        }
+        const y = (index % 2) * 350 + 50; // Adjust y position for each card
+        addBusinessCard(data, 50, y);
+      });
+
+      doc.end();
+
+      writeStream.on('finish', () => {
+        console.log('PDF creation finished');
+        resolve(filename);
+      });
+      writeStream.on('error', (error) => {
+        console.error('Error writing PDF:', error);
         reject(error);
+      });
+    } catch (error) {
+      console.error('Error in createPdf:', error);
+      reject(error);
       }
     });
   }

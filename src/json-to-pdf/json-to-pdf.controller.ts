@@ -23,10 +23,6 @@ export class JsonToPdfController {
   }))
   async uploadFile(@UploadedFile() file: Express.Multer.File, @Req() req: Request, @Res() res: Response) {
     try {
-      if (!file) {
-        throw new HttpException('File not provided', HttpStatus.BAD_REQUEST);
-      }
-      
       console.log('File received:', file);
       const jsonData = JSON.parse(fs.readFileSync(file.path, 'utf8'));
       console.log('Parsed JSON data:', jsonData);
@@ -37,28 +33,25 @@ export class JsonToPdfController {
       return res.json({ message: 'PDF created successfully', previewUrl, downloadUrl });
     } catch (error) {
       console.error('Error in uploadFile:', error);
-      if (error instanceof SyntaxError) {
-        throw new HttpException('Invalid JSON format', HttpStatus.BAD_REQUEST);
-      }
-      res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: `Internal server error: ${error.message}` });
+      res.status(500).json({ message: `Internal server error: ${error.message}` });
     }
   }
-
+  
   @Get('preview/:filename')
   async previewFile(@Param('filename') filename: string, @Res() res: Response) {
     try {
       const filePath = path.join(__dirname, '../../../pdfs', filename);
       if (fs.existsSync(filePath)) {
-        res.sendFile(filePath);
+        res.contentType('application/pdf');
+        fs.createReadStream(filePath).pipe(res);
       } else {
-        res.status(HttpStatus.NOT_FOUND).json({ message: 'File not found' });
+        res.status(404).json({ message: 'File not found' });
       }
     } catch (error) {
       console.error('Error in previewFile:', error);
-      res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: `Internal server error: ${error.message}` });
+      res.status(500).json({ message: `Internal server error: ${error.message}` });
     }
   }
-
   @Get('download/:filename')
   async downloadFile(@Param('filename') filename: string, @Res() res: Response) {
     try {

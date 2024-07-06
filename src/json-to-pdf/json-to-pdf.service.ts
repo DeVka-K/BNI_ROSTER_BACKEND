@@ -23,26 +23,27 @@ export class JsonToPdfService {
     return new Promise((resolve, reject) => {
       try {
         const doc = new PDFDocument();
-        const filePath = path.join(__dirname, '../../../pdfs', `output_${Date.now()}.pdf`);
+        const filename = `output_${Date.now()}.pdf`;
+        const filePath = path.join(__dirname, '../../../pdfs', filename);
         console.log('Creating PDF at:', filePath);
-  
-        // Ensure the directory exists
-        const dir = path.dirname(filePath);
-        if (!fs.existsSync(dir)) {
-          fs.mkdirSync(dir, { recursive: true });
-        }
   
         const writeStream = fs.createWriteStream(filePath);
         doc.pipe(writeStream);
   
-        // Add content to PDF (customize this part based on your JSON structure)
-        doc.text(JSON.stringify(jsonData, null, 2));
+        // Add formatted content to PDF
+        doc.fontSize(18).text('Business Card Information', { align: 'center' });
+        doc.moveDown();
+        doc.fontSize(12).text(`Name: ${jsonData.name}`);
+        doc.text(`Company: ${jsonData.companyName}`);
+        doc.text(`Phone: ${jsonData.phoneNumber}`);
+        doc.text(`Email: ${jsonData.email}`);
+        doc.text(`Business Type: ${jsonData.businessType}`);
         
         doc.end();
   
         writeStream.on('finish', () => {
           console.log('PDF creation finished');
-          resolve(filePath);
+          resolve(filename);  // Return just the filename, not the full path
         });
         writeStream.on('error', (error) => {
           console.error('Error writing PDF:', error);

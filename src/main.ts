@@ -22,16 +22,14 @@
 
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import * as express from 'express';
+import { join } from 'path';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.setGlobalPrefix('api'); // This adds the /api prefix to all routes
 
-  // Enable CORS
-  app.enableCors({
-    origin: 'http://localhost:3000', // Adjust to your React app's URL
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    credentials: true,
-  });
+  app.use('/pdfs', express.static(join(process.cwd(), 'pdfs')));
 
   await app.listen(3000);
 }

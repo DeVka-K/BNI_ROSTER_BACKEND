@@ -53,24 +53,51 @@
 //   }
 // }
 
+// import { Controller, Post, Body, Res } from '@nestjs/common';
+// import { Response } from 'express';
+// import { PdfService } from './pdf.service';
+
+// @Controller('pdf')
+// export class PdfController {
+//   constructor(private readonly pdfService: PdfService) {}
+
+//   @Post('generate')
+//   async generatePdf(@Body() data: any, @Res() res: Response) {
+//     try {
+//       const pdfStream = await this.pdfService.generatePdf(data);
+
+//       res.setHeader('Content-Type', 'application/pdf');
+//       pdfStream.pipe(res);
+//     } catch (error) {
+//       console.error('Error generating PDF:', error);
+//       res.status(500).send('Error generating PDF');
+//     }
+//   }
+// }
+
+
+
+// src/pdf/pdf.controller.ts
+
 import { Controller, Post, Body, Res } from '@nestjs/common';
 import { Response } from 'express';
 import { PdfService } from './pdf.service';
+import { GeneratePdfDto } from './dto/generate-pdf.dto';
 
 @Controller('pdf')
 export class PdfController {
   constructor(private readonly pdfService: PdfService) {}
 
   @Post('generate')
-  async generatePdf(@Body() data: any, @Res() res: Response) {
-    try {
-      const pdfStream = await this.pdfService.generatePdf(data);
+  async generatePdf(@Body() generatePdfDto: GeneratePdfDto, @Res() res: Response) {
+    const pdfBuffer = await this.pdfService.generatePdf(generatePdfDto);
+    
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': 'attachment; filename=bni_roster.pdf',
+      'Content-Length': pdfBuffer.length,
+    });
 
-      res.setHeader('Content-Type', 'application/pdf');
-      pdfStream.pipe(res);
-    } catch (error) {
-      console.error('Error generating PDF:', error);
-      res.status(500).send('Error generating PDF');
-    }
+    res.end(pdfBuffer);
   }
 }

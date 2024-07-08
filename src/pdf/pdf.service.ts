@@ -115,29 +115,51 @@
 //     }
 //   }
 // }
+// src/pdf/pdf.service.ts
+
 import { Injectable } from '@nestjs/common';
+import { GeneratePdfDto } from './dto/generate-pdf.dto';
 import * as PDFDocument from 'pdfkit';
-import { Readable, Writable } from 'stream';
 
 @Injectable()
 export class PdfService {
-  async generatePdf(data: any): Promise<Readable> {
-    return new Promise<Readable>((resolve, reject) => {
+  async generatePdf(data: GeneratePdfDto): Promise<Buffer> {
+    return new Promise((resolve) => {
       const doc = new PDFDocument();
+      const buffers: Buffer[] = [];
 
-      // Customize your PDF here using data from the frontend
-      doc.text('Generated PDF from backend', 100, 100);
+      doc.on('data', buffers.push.bind(buffers));
+      doc.on('end', () => {
+        const pdfBuffer = Buffer.concat(buffers);
+        resolve(pdfBuffer);
+      });
 
-      // Create a writable stream and pipe the PDF document to it
-      const writableStream: Writable = new Writable();
-      doc.pipe(writableStream);
+      // Add content to the PDF
+      doc.fontSize(18).text('BNI Roster', { align: 'center' });
+      doc.moveDown();
+      doc.fontSize(12).text(`Chapter Name: ${data.chapterName}`);
+      doc.text(`Location: ${data.location}`);
+      doc.text(`Member Size: ${data.memberSize}`);
+      doc.text(`Regional Rank: ${data.regionalRank}`);
+      doc.text(`All India Rank: ${data.allIndiaRank}`);
+      doc.text(`Global Rank: ${data.globalRank}`);
+      
+      doc.moveDown();
+      doc.fontSize(14).text('Members', { underline: true });
+      
+      data.members.forEach((member, index) => {
+        doc.moveDown();
+        doc.fontSize(12).text(`Member ${index + 1}`);
+        doc.text(`Name: ${member.name}`);
+        doc.text(`Company: ${member.company}`);
+        doc.text(`Email: ${member.email}`);
+        doc.text(`Phone: ${member.phone}`);
+        doc.text(`Category: ${member.category}`);
+      });
 
-      // End the PDF document
       doc.end();
-
-      // Resolve with the readable stream
-      resolve(writableStream as unknown as Readable);
     });
   }
 }
+
 

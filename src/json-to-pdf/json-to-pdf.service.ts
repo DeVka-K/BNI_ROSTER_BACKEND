@@ -7,6 +7,9 @@ import * as PDFDocument from 'pdfkit';
 import * as fs from 'fs';
 import * as path from 'path';
 
+const IMAGES_BASE_PATH = process.env.IMAGES_BASE_PATH || path.resolve(__dirname, '../../../images');
+const PDFS_BASE_PATH = process.env.PDFS_BASE_PATH || path.resolve(__dirname, '../../../pdfs');
+
 @Injectable()
 export class JsonToPdfService {
   constructor(
@@ -18,17 +21,18 @@ export class JsonToPdfService {
     const query = new GetJsonToPdfQuery(jsonData);
     return this.queryBus.execute(query);
   }
+
   async createPdf(jsonData: any): Promise<string> {
     return new Promise((resolve, reject) => {
       try {
         const doc = new PDFDocument({ size: 'A4' });
         const filename = `output_${Date.now()}.pdf`;
-        const filePath = path.join(__dirname, '../../../pdfs', filename);
+        const filePath = path.join(PDFS_BASE_PATH, filename);
         console.log('Creating PDF at:', filePath);
-  
+
         const writeStream = fs.createWriteStream(filePath);
         doc.pipe(writeStream);
-  
+
         // Function to add a single business card
         const addBusinessCard = (data, x, y) => {
           // Add text information
@@ -38,20 +42,20 @@ export class JsonToPdfService {
           doc.text(`Phone: ${data.phoneNumber}`, x, y + 40);
           doc.text(`Email: ${data.email}`, x, y + 60);
           doc.text(`Business Type: ${data.businessType}`, x, y + 80);
-  
+
           // Add company logo
           if (data.logoUrl) {
-            const logoPath = path.resolve(__dirname, '../../../images', data.logoUrl);
+            const logoPath = path.join(IMAGES_BASE_PATH, data.logoUrl);
             if (fs.existsSync(logoPath)) {
               doc.image(logoPath, x + 200, y, { width: 80, height: 80 });
             } else {
               console.warn(`Logo file not found: ${logoPath}`);
             }
           }
-  
+
           // Add person's photo
           if (data.photoUrl) {
-            const photoPath = path.resolve(__dirname, '../../../images', data.photoUrl);
+            const photoPath = path.join(IMAGES_BASE_PATH, data.photoUrl);
             if (fs.existsSync(photoPath)) {
               doc.image(photoPath, x + 200, y + 100, { width: 80, height: 80 });
             } else {
@@ -59,29 +63,29 @@ export class JsonToPdfService {
             }
           }
         };
-  
+
         const dataArray = Array.isArray(jsonData) ? jsonData : [jsonData];
-      dataArray.forEach((data, index) => {
-        if (index > 0 && index % 2 === 0) {
-          doc.addPage(); // Add a new page every two cards
-        }
-        const y = (index % 2) * 350 + 50; // Adjust y position for each card
-        addBusinessCard(data, 50, y);
-      });
+        dataArray.forEach((data, index) => {
+          if (index > 0 && index % 2 === 0) {
+            doc.addPage(); // Add a new page every two cards
+          }
+          const y = (index % 2) * 350 + 50; // Adjust y position for each card
+          addBusinessCard(data, 50, y);
+        });
 
-      doc.end();
+        doc.end();
 
-      writeStream.on('finish', () => {
-        console.log('PDF creation finished');
-        resolve(filename);
-      });
-      writeStream.on('error', (error) => {
-        console.error('Error writing PDF:', error);
+        writeStream.on('finish', () => {
+          console.log('PDF creation finished');
+          resolve(filename);
+        });
+        writeStream.on('error', (error) => {
+          console.error('Error writing PDF:', error);
+          reject(error);
+        });
+      } catch (error) {
+        console.error('Error in createPdf:', error);
         reject(error);
-      });
-    } catch (error) {
-      console.error('Error in createPdf:', error);
-      reject(error);
       }
     });
   }

@@ -98,6 +98,6 @@ export class PdfController {
       'Content-Length': pdfBuffer.length,
     });
 
-    res.end(pdfBuffer);
+    res.send(pdfBuffer);
   }
 }

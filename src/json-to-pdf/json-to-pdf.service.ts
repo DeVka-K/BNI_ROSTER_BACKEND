@@ -39,7 +39,7 @@ export class JsonToPdfService {
         const numberBoxWidth = 20;
         const numberBoxHeight = 20;
         const cardSpacing = 10;
-        const topBannerHeight = 40;
+        const topBannerHeight = 60; // Increased to accommodate the new design
 
         const addBusinessCard = (data, index) => {
           const cardHeight = (pageHeight - 2 * margin - topBannerHeight - 6 * cardSpacing) / 7;
@@ -93,21 +93,26 @@ export class JsonToPdfService {
           const lineLength = 150;
           const lineYStart = y;
           const lineSpacing = textHeight / 5;
-          doc.lineWidth(0.5);
+          doc.lineWidth(0.2);
           for (let i = 0; i < 5; i++) {
             const lineY = lineYStart + i * lineSpacing;
             doc.moveTo(lineXStart, lineY).lineTo(lineXStart + lineLength, lineY).stroke();
           }
         };
+
         const addPage = () => {
-          // Red banner at the top
-          doc.rect(0, 0, pageWidth, topBannerHeight).fill('#FF0000');
+          // White background for the entire page
+          doc.rect(0, 0, pageWidth, pageHeight).fill('#FFFFFF');
 
-          // White triangle in top-right corner
-          doc.polygon([pageWidth - topBannerHeight, 0], [pageWidth, 0], [pageWidth, topBannerHeight]).fill('#FFFFFF');
+          // Red triangle
+          doc.save();
+          doc.polygon([0, 0], [pageWidth * 0.6, 0], [0, topBannerHeight]).fill('#FF0000');
+          doc.restore();
 
-          // White main content area
-          doc.rect(0, topBannerHeight, pageWidth, pageHeight - topBannerHeight).fill('#FFFFFF');
+          // White overlay triangle
+          doc.save();
+          doc.polygon([0, 0], [pageWidth * 0.2, 0], [0, topBannerHeight * 0.5]).fill('#FFFFFF');
+          doc.restore();
         };
 
         const dataArray = Array.isArray(jsonData) ? jsonData : [jsonData];

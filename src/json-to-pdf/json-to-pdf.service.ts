@@ -25,7 +25,7 @@ export class JsonToPdfService {
   async createPdf(jsonData: any): Promise<string> {
     return new Promise((resolve, reject) => {
       try {
-        const doc = new PDFDocument({ size: 'A4' });
+        const doc = new PDFDocument({ size: 'A4', margin: 0 });
         const filename = `output_${Date.now()}.pdf`;
         const filePath = path.join(PDFS_BASE_PATH, filename);
         console.log('Creating PDF at:', filePath);
@@ -33,44 +33,76 @@ export class JsonToPdfService {
         const writeStream = fs.createWriteStream(filePath);
         doc.pipe(writeStream);
 
-        // Function to add a single business card
-        const addBusinessCard = (data, x, y) => {
-          // Add text information
-          doc.fontSize(10).font('Helvetica');
-          doc.text(`Name: ${data.name}`, x, y);
-          doc.text(`Company: ${data.companyName}`, x, y + 20);
-          doc.text(`Phone: ${data.phoneNumber}`, x, y + 40);
-          doc.text(`Email: ${data.email}`, x, y + 60);
-          doc.text(`Business Type: ${data.businessType}`, x, y + 80);
+        const pageWidth = 595.28;
+        const pageHeight = 841.89;
+        const margin = 20;
+        const numberBoxWidth = 20; // Reduced the width of the numbered boxes
+        const numberBoxHeight = 20; // Reduced the height of the numbered boxes
+        const cardSpacing = 10;
+        const topBannerHeight = 40; // Adjusted the height of the top banner
 
-          // Add company logo
+        const addBusinessCard = (data, index) => {
+          const cardHeight = (pageHeight - 2 * margin - topBannerHeight - 6 * cardSpacing) / 7;
+          const x = margin;
+          const y = margin + topBannerHeight + (index % 7) * (cardHeight + cardSpacing);
+
+          // Add smaller number box
+          doc.rect(x, y, numberBoxWidth, numberBoxHeight).fill('#FF0000');
+          doc.fill('#FFFFFF').fontSize(12).font('Helvetica-Bold'); // Adjusted font size
+          doc.text((index + 1).toString(), x, y + 5, {
+            width: numberBoxWidth,
+            align: 'center'
+          });
+
+          // Add text information
+          doc.fill('#000000').fontSize(10).font('Helvetica');
+          const textX = x + numberBoxWidth + 10;
+          const textY = y + 5;
+
+          doc.font('Helvetica-Bold').text(data.name || '', textX, textY);
+          doc.font('Helvetica').text(data.companyName || '', textX, textY + 15);
+          doc.text(data.phoneNumber || '', textX, textY + 30);
+          doc.text(data.email || '', textX, textY + 45);
+          doc.text(data.businessType || '', textX, textY + 60);
+
+          // Add company logo and person's photo
+          const imageSize = 40;
+          const imageY = y + 5;
           if (data.logoUrl) {
             const logoPath = path.join(IMAGES_BASE_PATH, data.logoUrl);
             if (fs.existsSync(logoPath)) {
-              doc.image(logoPath, x + 200, y, { width: 80, height: 80 });
-            } else {
-              console.warn(`Logo file not found: ${logoPath}`);
+              doc.image(logoPath, pageWidth - margin - 2 * imageSize - 10, imageY, { width: imageSize, height: imageSize });
             }
           }
-
-          // Add person's photo
           if (data.photoUrl) {
             const photoPath = path.join(IMAGES_BASE_PATH, data.photoUrl);
             if (fs.existsSync(photoPath)) {
-              doc.image(photoPath, x + 200, y + 100, { width: 80, height: 80 });
-            } else {
-              console.warn(`Photo file not found: ${photoPath}`);
+              doc.image(photoPath, pageWidth - margin - imageSize, imageY, { width: imageSize, height: imageSize });
             }
           }
+
+          // Remove the thin line after the card
+        };
+
+        const addPage = () => {
+          // Adjusted the size of the red banner at the top
+          doc.rect(0, 0, pageWidth, topBannerHeight).fill('#FF0000');
+
+          // Adjusted the white triangle in top-right corner
+          doc.polygon([pageWidth - topBannerHeight, 0], [pageWidth, 0], [pageWidth, topBannerHeight]).fill('#FFFFFF');
+
+          // White main content area
+          doc.rect(0, topBannerHeight, pageWidth, pageHeight - topBannerHeight).fill('#FFFFFF');
         };
 
         const dataArray = Array.isArray(jsonData) ? jsonData : [jsonData];
+
         dataArray.forEach((data, index) => {
-          if (index > 0 && index % 2 === 0) {
-            doc.addPage(); // Add a new page every two cards
+          if (index % 7 === 0) {
+            if (index > 0) doc.addPage();
+            addPage();
           }
-          const y = (index % 2) * 350 + 50; // Adjust y position for each card
-          addBusinessCard(data, 50, y);
+          addBusinessCard(data, index);
         });
 
         doc.end();

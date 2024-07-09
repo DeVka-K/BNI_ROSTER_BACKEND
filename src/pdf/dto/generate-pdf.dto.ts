@@ -1,16 +1,46 @@
+// src/pdf/dto/generate-pdf.dto.ts
+
+import { IsString, IsArray, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
+
+class MemberDto {
+  @IsString()
+  name: string;
+
+  @IsString()
+  company: string;
+
+  @IsString()
+  email: string;
+
+  @IsString()
+  phone: string;
+
+  @IsString()
+  category: string;
+}
+
 export class GeneratePdfDto {
-    chapterName: string;
-    location: string;
-    memberSize: string;
-    regionalRank: string;
-    allIndiaRank: string;
-    globalRank: string;
-    members: {
-      id: number;
-      name: string;
-      company: string;
-      email: string;
-      phone: string;
-      category: string;
-    }[];
-  }
+  @IsString()
+  chapterName: string;
+
+  @IsString()
+  location: string;
+
+  @IsString()
+  memberSize: string;
+
+  @IsString()
+  regionalRank: string;
+
+  @IsString()
+  allIndiaRank: string;
+
+  @IsString()
+  globalRank: string;
+
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => MemberDto)
+  members: MemberDto[];
+}

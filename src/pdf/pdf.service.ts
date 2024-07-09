@@ -1,165 +1,79 @@
-// import { Injectable } from '@nestjs/common';
-// import * as PDFDocument from 'pdfkit';
-
-// @Injectable()
-// export class PdfService {
-//   async generatePdf(data: any): Promise<string> {
-//     return new Promise((resolve, reject) => {
-//       try {
-//         const doc = new PDFDocument();
-//         const buffers: Buffer[] = [];
-
-//         doc.on('data', buffers.push.bind(buffers));
-//         doc.on('end', () => {
-//           const pdfBuffer = Buffer.concat(buffers);
-//           const pdfBase64 = pdfBuffer.toString('base64');
-//           resolve(pdfBase64);
-//         });
-
-//         this.generateChapterPage(doc, data.chapter);
-
-//         data.members.forEach((member: any) => {
-//           this.generateMemberPage(doc, member);
-//         });
-
-//         doc.end();
-//       } catch (error) {
-//         reject(error);
-//       }
-//     });
-//   }
-
-//   private generateChapterPage(doc: PDFKit.PDFDocument, chapter: any) {
-//     doc.fontSize(24).text('Chapter Details', { align: 'center' });
-//     doc.moveDown();
-//     doc.fontSize(12);
-//     doc.text(`Chapter Name: ${chapter.chapterName}`);
-//     doc.text(`Location: ${chapter.location}`);
-//     doc.text(`Member Size: ${chapter.memberSize}`);
-//     doc.text(`Regional Rank: ${chapter.regionalRank}`);
-//     doc.text(`All India Rank: ${chapter.allIndiaRank}`);
-//     doc.text(`Global Rank: ${chapter.globalRank}`);
-
-//     if (chapter.chapterLogo) {
-//       try {
-//         console.log('Chapter Logo Base64 Length:', chapter.chapterLogo.length);
-//         console.log('Chapter Logo Base64 Snippet:', chapter.chapterLogo.slice(0, 30));
-
-//         const logoBuffer = Buffer.from(chapter.chapterLogo, 'base64');
-//         doc.image(logoBuffer, {
-//           fit: [250, 250],
-//           align: 'center',
-//           valign: 'center'
-//         });
-//       } catch (error) {
-//         console.error('Error processing chapter logo:', error);
-//       }
-//     }
-//   }
-
-//   private generateMemberPage(doc: PDFKit.PDFDocument, member: any) {
-//     doc.addPage();
-//     doc.fontSize(24).text('Member Details', { align: 'center' });
-//     doc.moveDown();
-//     doc.fontSize(12);
-//     doc.text(`Name: ${member.name}`);
-//     doc.text(`Company: ${member.company}`);
-//     doc.text(`Email: ${member.email}`);
-//     doc.text(`Phone: ${member.phone}`);
-//     doc.text(`Category: ${member.category}`);
-
-//     if (member.memberPhoto) {
-//       try {
-//         console.log('Member Photo Base64 Length:', member.memberPhoto.length);
-//         console.log('Member Photo Base64 Snippet:', member.memberPhoto.slice(0, 30));
-
-//         // Log the entire Base64 string for debugging (optional)
-//         // console.log('Member Photo Base64:', member.memberPhoto);
-
-//         const memberPhotoBuffer = Buffer.from(member.memberPhoto, 'base64');
-
-//         // Log the buffer length to ensure it's decoded correctly
-//         console.log('Member Photo Buffer Length:', memberPhotoBuffer.length);
-
-//         doc.image(memberPhotoBuffer, {
-//           fit: [200, 200],
-//           align: 'center',
-//           valign: 'center'
-//         });
-//       } catch (error) {
-//         console.error('Error processing member photo:', error);
-//       }
-//     }
-
-//     if (member.companyPhoto) {
-//       try {
-//         console.log('Company Photo Base64 Length:', member.companyPhoto.length);
-//         console.log('Company Photo Base64 Snippet:', member.companyPhoto.slice(0, 30));
-
-//         // Log the entire Base64 string for debugging (optional)
-//         // console.log('Company Photo Base64:', member.companyPhoto);
-
-//         const companyPhotoBuffer = Buffer.from(member.companyPhoto, 'base64');
-
-//         // Log the buffer length to ensure it's decoded correctly
-//         console.log('Company Photo Buffer Length:', companyPhotoBuffer.length);
-
-//         doc.image(companyPhotoBuffer, {
-//           fit: [200, 200],
-//           align: 'right',
-//           valign: 'center'
-//         });
-//       } catch (error) {
-//         console.error('Error processing company photo:', error);
-//       }
-//     }
-//   }
-// }
 // src/pdf/pdf.service.ts
 
 import { Injectable } from '@nestjs/common';
-import { GeneratePdfDto } from './dto/generate-pdf.dto';
 import * as PDFDocument from 'pdfkit';
+import * as fs from 'fs';
+import * as path from 'path';
 
 @Injectable()
 export class PdfService {
-  async generatePdf(data: GeneratePdfDto): Promise<Buffer> {
-    return new Promise((resolve) => {
-      const doc = new PDFDocument();
-      const buffers: Buffer[] = [];
+  async generatePdf(chapterName: string, location: string, memberSize: string, regionalRank: string, allIndiaRank: string, globalRank: string, members: any[]): Promise<string> {
+    const doc = new PDFDocument({
+      size: 'A4',
+      margin: 0,
+    });
 
-      doc.on('data', buffers.push.bind(buffers));
-      doc.on('end', () => {
-        const pdfBuffer = Buffer.concat(buffers);
-        resolve(pdfBuffer);
-      });
+    const pdfPath = path.join(process.cwd(), 'bni_roster.pdf');
+    const writeStream = fs.createWriteStream(pdfPath);
+    doc.pipe(writeStream);
 
-      // Add content to the PDF
-      doc.fontSize(18).text('BNI Roster', { align: 'center' });
-      doc.moveDown();
-      doc.fontSize(12).text(`Chapter Name: ${data.chapterName}`);
-      doc.text(`Location: ${data.location}`);
-      doc.text(`Member Size: ${data.memberSize}`);
-      doc.text(`Regional Rank: ${data.regionalRank}`);
-      doc.text(`All India Rank: ${data.allIndiaRank}`);
-      doc.text(`Global Rank: ${data.globalRank}`);
-      
-      doc.moveDown();
-      doc.fontSize(14).text('Members', { underline: true });
-      
-      data.members.forEach((member, index) => {
-        doc.moveDown();
-        doc.fontSize(12).text(`Member ${index + 1}`);
-        doc.text(`Name: ${member.name}`);
-        doc.text(`Company: ${member.company}`);
-        doc.text(`Email: ${member.email}`);
-        doc.text(`Phone: ${member.phone}`);
-        doc.text(`Category: ${member.category}`);
-      });
+    // Chapter page
+    this.addChapterPage(doc, chapterName, location, memberSize, regionalRank, allIndiaRank, globalRank);
 
-      doc.end();
+    // Member pages
+    members.forEach((member, index) => {
+      doc.addPage();
+      this.addMemberPage(doc, member, index + 1);
+    });
+
+    doc.end();
+
+    return new Promise((resolve, reject) => {
+      writeStream.on('finish', () => resolve(pdfPath));
+      writeStream.on('error', reject);
     });
   }
+
+  private addChapterPage(doc: PDFKit.PDFDocument, chapterName: string, location: string, memberSize: string, regionalRank: string, allIndiaRank: string, globalRank: string) {
+    const backgroundPath = path.join(process.cwd(),'src', 'assets', 'chapter_background.png');
+    doc.image(backgroundPath, 0, 0, {width: doc.page.width, height: doc.page.height});
+
+    // Chapter details
+    doc.fontSize(24).fillColor('white').text('BNI', 50, 200, { align: 'center' });
+    doc.fontSize(20).text(chapterName, 50, 230, { align: 'center' });
+    doc.fontSize(16).text('2024', 50, 260, { align: 'center' });
+
+    const infoY = 300;
+    const infoSpacing = 30;
+    doc.fontSize(12).fillColor('black');
+    doc.text(`Location: ${location}`, 50, infoY, { align: 'center' });
+    doc.text(`Members: ${memberSize}`, 50, infoY + infoSpacing, { align: 'center' });
+    doc.text(`Regional Rank: ${regionalRank}`, 50, infoY + infoSpacing * 2, { align: 'center' });
+    doc.text(`All India Rank: ${allIndiaRank}`, 50, infoY + infoSpacing * 3, { align: 'center' });
+    doc.text(`Global Rank: ${globalRank}`, 50, infoY + infoSpacing * 4, { align: 'center' });
+  }
+
+  private addMemberPage(doc: PDFKit.PDFDocument, member: any, index: number) {
+    const backgroundPath = path.join(process.cwd(),'src' ,'assets', 'member_background.png');
+    doc.image(backgroundPath, 0, 0, {width: doc.page.width, height: doc.page.height});
+
+    // Member details
+    const startY = 150;
+    const lineHeight = 25;
+    doc.fontSize(16).fillColor('black').text(`Member ${index}`, 50, startY);
+    doc.fontSize(12);
+    doc.text(`Name: ${member.name}`, 70, startY + lineHeight);
+    doc.text(`Company: ${member.company}`, 70, startY + lineHeight * 2);
+    doc.text(`Email: ${member.email}`, 70, startY + lineHeight * 3);
+    doc.text(`Phone: ${member.phone}`, 70, startY + lineHeight * 4);
+    doc.text(`Category: ${member.category}`, 70, startY + lineHeight * 5);
+
+    // Placeholder for member photo
+    doc.rect(400, startY, 150, 150).stroke();
+    doc.text('Member Photo', 425, startY + 70);
+
+    // Placeholder for company logo
+    doc.rect(400, startY + 200, 150, 150).stroke();
+    doc.text('Company Logo', 425, startY + 270);
+  }
 }
-
-

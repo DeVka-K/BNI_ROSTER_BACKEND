@@ -36,59 +36,74 @@ export class JsonToPdfService {
         const pageWidth = 595.28;
         const pageHeight = 841.89;
         const margin = 20;
-        const numberBoxWidth = 20; // Reduced the width of the numbered boxes
-        const numberBoxHeight = 20; // Reduced the height of the numbered boxes
+        const numberBoxWidth = 20;
+        const numberBoxHeight = 20;
         const cardSpacing = 10;
-        const topBannerHeight = 40; // Adjusted the height of the top banner
+        const topBannerHeight = 40;
 
         const addBusinessCard = (data, index) => {
           const cardHeight = (pageHeight - 2 * margin - topBannerHeight - 6 * cardSpacing) / 7;
           const x = margin;
           const y = margin + topBannerHeight + (index % 7) * (cardHeight + cardSpacing);
-
+        
           // Add smaller number box
+          const numberBoxWidth = 25;
+          const numberBoxHeight = 25;
           doc.rect(x, y, numberBoxWidth, numberBoxHeight).fill('#FF0000');
-          doc.fill('#FFFFFF').fontSize(12).font('Helvetica-Bold'); // Adjusted font size
-          doc.text((index + 1).toString(), x, y + 5, {
+          doc.fill('#FFFFFF').fontSize(14).font('Helvetica-Bold');
+          doc.text((index + 1).toString(), x, y + 6, {
             width: numberBoxWidth,
             align: 'center'
           });
-
+        
           // Add text information
           doc.fill('#000000').fontSize(10).font('Helvetica');
           const textX = x + numberBoxWidth + 10;
-          const textY = y + 5;
-
-          doc.font('Helvetica-Bold').text(data.name || '', textX, textY);
-          doc.font('Helvetica').text(data.companyName || '', textX, textY + 15);
-          doc.text(data.phoneNumber || '', textX, textY + 30);
-          doc.text(data.email || '', textX, textY + 45);
-          doc.text(data.businessType || '', textX, textY + 60);
-
+          const textY = y;
+          const textWidth = 180;
+          const textHeight = 75; // Approximate height of text content
+        
+          doc.font('Helvetica-Bold').text(data.name || '', textX, textY, { width: textWidth });
+          doc.font('Helvetica').text(data.companyName || '', textX, textY + 15, { width: textWidth });
+          doc.text(data.phoneNumber || '', textX, textY + 30, { width: textWidth });
+          doc.text(data.email || '', textX, textY + 45, { width: textWidth });
+          doc.text(data.businessType || '', textX, textY + 60, { width: textWidth });
+        
           // Add company logo and person's photo
-          const imageSize = 40;
-          const imageY = y + 5;
+          const imageSize = textHeight; // Set image size to match text height
+          const imageY = y;
+          const logoX = textX + textWidth + 10;
+          const photoX = logoX + imageSize + 10;
+        
           if (data.logoUrl) {
             const logoPath = path.join(IMAGES_BASE_PATH, data.logoUrl);
             if (fs.existsSync(logoPath)) {
-              doc.image(logoPath, pageWidth - margin - 2 * imageSize - 10, imageY, { width: imageSize, height: imageSize });
+              doc.image(logoPath, logoX, imageY, { width: imageSize, height: imageSize });
             }
           }
           if (data.photoUrl) {
             const photoPath = path.join(IMAGES_BASE_PATH, data.photoUrl);
             if (fs.existsSync(photoPath)) {
-              doc.image(photoPath, pageWidth - margin - imageSize, imageY, { width: imageSize, height: imageSize });
+              doc.image(photoPath, photoX, imageY, { width: imageSize, height: imageSize });
             }
           }
-
-          // Remove the thin line after the card
+        
+          // Add horizontal lines for notes
+          const lineXStart = photoX + imageSize + 20;
+          const lineLength = 150;
+          const lineYStart = y;
+          const lineSpacing = textHeight / 5;
+          doc.lineWidth(0.5);
+          for (let i = 0; i < 5; i++) {
+            const lineY = lineYStart + i * lineSpacing;
+            doc.moveTo(lineXStart, lineY).lineTo(lineXStart + lineLength, lineY).stroke();
+          }
         };
-
         const addPage = () => {
-          // Adjusted the size of the red banner at the top
+          // Red banner at the top
           doc.rect(0, 0, pageWidth, topBannerHeight).fill('#FF0000');
 
-          // Adjusted the white triangle in top-right corner
+          // White triangle in top-right corner
           doc.polygon([pageWidth - topBannerHeight, 0], [pageWidth, 0], [pageWidth, topBannerHeight]).fill('#FFFFFF');
 
           // White main content area
@@ -122,6 +137,7 @@ export class JsonToPdfService {
     });
   }
 }
+
 
 //   async createPdf(jsonData: any): Promise<string> {
 //     return new Promise((resolve, reject) => {

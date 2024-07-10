@@ -1,5 +1,3 @@
-// src/pdf/pdf.controller.ts
-
 import { Controller, Post, Body, Res, HttpException, HttpStatus } from '@nestjs/common';
 import { Response } from 'express';
 import { PdfService } from './pdf.service';
@@ -12,6 +10,9 @@ export class PdfController {
   @Post('generate')
   async generatePdf(@Body() pdfData: GeneratePdfDto, @Res() res: Response): Promise<void> {
     try {
+      // Debugging: log the pdfData object
+      console.log('Received pdfData:', pdfData);
+
       const pdfPath = await this.pdfService.generatePdf(
         pdfData.chapterName,
         pdfData.location,

@@ -525,7 +525,8 @@ export class PDFService {
     // Add cells with try-catch to handle any errors
     try {
       addCell(data.location, 'Location', 0, statsYPosition, cellWidth);
-      addCell(data.memberSize, 'Members', cellWidth, statsYPosition, cellWidth);
+      addCell(data.memberSize
+        , 'Members', cellWidth, statsYPosition, cellWidth);
       addCell(data.regionalRank, 'Regional Rank', cellWidth * 2, statsYPosition, cellWidth);
       addCell(data.allIndiaRank, 'All India Rank', cellWidth * 3, statsYPosition, cellWidth);
       addCell(data.globalRank, 'Global Rank', cellWidth * 4, statsYPosition, cellWidth);

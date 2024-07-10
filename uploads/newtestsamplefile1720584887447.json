@@ -1,0 +1,56 @@
+[
+  {
+    "name": "John Doe",
+    "companyName": "ABC Inc.",
+    "phoneNumber": "+1234567890",
+    "email": "john.doe@example.com",
+    "businessType": "Technology",
+    "logoUrl": "logoimages.png",
+    "photoUrl": "PersonPicture.jpg"
+  },
+  {
+    "name": "Amal B",
+    "companyName": "Aabasoft",
+    "phoneNumber": "9349498098",
+    "email": "amal@example.com",
+    "businessType": "Technology",
+    "logoUrl": "logoimage2.png",
+    "photoUrl": "person2.jpg"
+  },
+  {
+    "name": "Athul",
+    "companyName": "Infosys",
+    "phoneNumber": "9495849843",
+    "email": "athul@example.com",
+    "businessType": "Technology",
+    "logoUrl": "logoimage3.png",
+    "photoUrl": "person3.jpg"
+  },
+  {
+    "name": "Dani Roy",
+    "companyName": "Phases India",
+    "phoneNumber": "9495959595",
+    "email": "dani@example.com",
+    "businessType": "Technology",
+    "logoUrl": "logoimage4.png",
+    "photoUrl": "person4.jpg"
+  },
+  {
+    "name": "Joseph Kurian",
+    "companyName": "ACC Inc",
+    "phoneNumber": "9898789876",
+    "email": "joseph@example.com",
+    "businessType": "Technology",
+    "logoUrl": "logoimage5.png",
+    "photoUrl": "person5.jpg"
+  },
+  {
+    "name": "Abin P",
+    "companyName": "ADB Inc.",
+    "phoneNumber": "9050548390",
+    "email": "abin@example.com",
+    "businessType": "Technology",
+    "logoUrl": "logoimage6.png",
+    "photoUrl": "person6.jpg"
+  }
+]

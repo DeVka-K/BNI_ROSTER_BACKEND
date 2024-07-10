@@ -6,6 +6,7 @@ import { GetJsonToPdfQuery } from './queries/get-json-to-pdf.query';
 import * as PDFDocument from 'pdfkit';
 import * as fs from 'fs';
 import * as path from 'path';
+import * as sharp from 'sharp';
 
 const IMAGES_BASE_PATH = process.env.IMAGES_BASE_PATH || path.resolve(__dirname, '../../../images');
 const PDFS_BASE_PATH = process.env.PDFS_BASE_PATH || path.resolve(__dirname, '../../../pdfs');
@@ -23,6 +24,9 @@ export class JsonToPdfService {
   }
 
   async createPdf(jsonData: any): Promise<string> {
+    console.log('IMAGES_BASE_PATH:', IMAGES_BASE_PATH);
+    console.log('PDFS_BASE_PATH:', PDFS_BASE_PATH);
+
     return new Promise((resolve, reject) => {
       try {
         const doc = new PDFDocument({ size: 'A4', margin: 0 });
@@ -39,9 +43,9 @@ export class JsonToPdfService {
         const numberBoxWidth = 20;
         const numberBoxHeight = 20;
         const cardSpacing = 10;
-        const topBannerHeight = 60; // Increased to accommodate the new design
+        const topBannerHeight = 60;
 
-        const addBusinessCard = (data, index) => {
+        const addBusinessCard = async (data, index) => {
           const cardHeight = (pageHeight - 2 * margin - topBannerHeight - 6 * cardSpacing) / 7;
           const x = margin;
           const y = margin + topBannerHeight + (index % 7) * (cardHeight + cardSpacing);
@@ -61,7 +65,7 @@ export class JsonToPdfService {
           const textX = x + numberBoxWidth + 10;
           const textY = y;
           const textWidth = 180;
-          const textHeight = 75; // Approximate height of text content
+          const textHeight = 75;
         
           doc.font('Helvetica-Bold').text(data.name || '', textX, textY, { width: textWidth });
           doc.font('Helvetica').text(data.companyName || '', textX, textY + 15, { width: textWidth });
@@ -69,24 +73,37 @@ export class JsonToPdfService {
           doc.text(data.email || '', textX, textY + 45, { width: textWidth });
           doc.text(data.businessType || '', textX, textY + 60, { width: textWidth });
         
-          // Add company logo and person's photo
-          const imageSize = textHeight; // Set image size to match text height
+          const imageSize = textHeight;
           const imageY = y;
           const logoX = textX + textWidth + 10;
           const photoX = logoX + imageSize + 10;
         
-          if (data.logoUrl) {
-            const logoPath = path.join(IMAGES_BASE_PATH, data.logoUrl);
-            if (fs.existsSync(logoPath)) {
-              doc.image(logoPath, logoX, imageY, { width: imageSize, height: imageSize });
+          const addImage = async (url, x, y, width, height, isLogo) => {
+            if (!url) return;
+            const imagePath = path.join(IMAGES_BASE_PATH, url);
+            try {
+              await fs.promises.access(imagePath);
+              console.log(`File exists: ${imagePath}`);
+              const stats = await fs.promises.stat(imagePath);
+              console.log(`File size: ${stats.size} bytes`);
+
+              const imageInfo = await sharp(imagePath).metadata();
+              console.log(`Image format: ${imageInfo.format}`);
+
+              const expectedFormat = isLogo ? 'png' : 'jpeg';
+              if (imageInfo.format !== expectedFormat) {
+                console.error(`Unexpected image format for ${url}. Expected ${expectedFormat}, got ${imageInfo.format}`);
+                return;
+              }
+
+              doc.image(imagePath, x, y, { width, height });
+            } catch (error) {
+              console.error(`Error with ${isLogo ? 'logo' : 'photo'} for ${data.name}:`, error.message);
             }
-          }
-          if (data.photoUrl) {
-            const photoPath = path.join(IMAGES_BASE_PATH, data.photoUrl);
-            if (fs.existsSync(photoPath)) {
-              doc.image(photoPath, photoX, imageY, { width: imageSize, height: imageSize });
-            }
-          }
+          };
+
+          await addImage(data.logoUrl, logoX, imageY, imageSize, imageSize, true);
+          await addImage(data.photoUrl, photoX, imageY, imageSize, imageSize, false);
         
           // Add horizontal lines for notes
           const lineXStart = photoX + imageSize + 20;
@@ -101,15 +118,10 @@ export class JsonToPdfService {
         };
 
         const addPage = () => {
-          // White background for the entire page
           doc.rect(0, 0, pageWidth, pageHeight).fill('#FFFFFF');
-
-          // Red triangle
           doc.save();
           doc.polygon([0, 0], [pageWidth * 0.6, 0], [0, topBannerHeight]).fill('#FF0000');
           doc.restore();
-
-          // White overlay triangle
           doc.save();
           doc.polygon([0, 0], [pageWidth * 0.2, 0], [0, topBannerHeight * 0.5]).fill('#FFFFFF');
           doc.restore();
@@ -117,20 +129,27 @@ export class JsonToPdfService {
 
         const dataArray = Array.isArray(jsonData) ? jsonData : [jsonData];
 
-        dataArray.forEach((data, index) => {
-          if (index % 7 === 0) {
-            if (index > 0) doc.addPage();
-            addPage();
+        const processCards = async () => {
+          for (let index = 0; index < dataArray.length; index++) {
+            if (index % 7 === 0) {
+              if (index > 0) doc.addPage();
+              addPage();
+            }
+            await addBusinessCard(dataArray[index], index);
           }
-          addBusinessCard(data, index);
+        };
+
+        processCards().then(() => {
+          doc.end();
+          writeStream.on('finish', () => {
+            console.log('PDF creation finished');
+            resolve(filename);
+          });
+        }).catch((error) => {
+          console.error('Error processing cards:', error);
+          reject(error);
         });
 
-        doc.end();
-
-        writeStream.on('finish', () => {
-          console.log('PDF creation finished');
-          resolve(filename);
-        });
         writeStream.on('error', (error) => {
           console.error('Error writing PDF:', error);
           reject(error);

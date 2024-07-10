@@ -1,21 +1,4 @@
-// import { Controller, Post, Body, Get } from '@nestjs/common';
-// import { ExcelToPdfService } from './excel-to-pdf.service';
-// import { ConvertExcelToPdfDto } from './dto/convert-excel-to-pdf.dto';
 
-// @Controller('excel-to-pdf')
-// export class ExcelToPdfController {
-//   constructor(private readonly excelToPdfService: ExcelToPdfService) {}
-
-//   @Post('convert')
-//   async convertExcelToPdf(@Body() convertExcelToPdfDto: ConvertExcelToPdfDto) {
-//     return this.excelToPdfService.convertExcelToPdf(convertExcelToPdfDto);
-//   }
-
-//   @Get('preview')
-//   async previewPdf(@Body() convertExcelToPdfDto: ConvertExcelToPdfDto) {
-//     return this.excelToPdfService.previewPdf(convertExcelToPdfDto);
-//   }
-// }
 
 import { Controller, Post, UploadedFile, UseInterceptors, Res, Get, Param, Req, HttpException, HttpStatus, Logger } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';

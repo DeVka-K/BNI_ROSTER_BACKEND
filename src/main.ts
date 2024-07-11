@@ -27,7 +27,9 @@ import { CorsOptions } from '@nestjs/common/interfaces/external/cors-options.int
  
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.useGlobalPipes(new ValidationPipe());
+  app.useGlobalPipes(new ValidationPipe({
+    transform: true,
+    transformOptions: { enableImplicitConversion: true },}));
   // Custom CORS configuration
   const corsOptions: CorsOptions = {
     origin: 'http://localhost:3000', // Allow only this origin

@@ -1,28 +1,45 @@
-import { Controller, Post, Body, Res, HttpException, HttpStatus } from '@nestjs/common';
+import { Controller, Post, Body, UseInterceptors, UploadedFiles, Res, HttpException, HttpStatus } from '@nestjs/common';
+import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { Response } from 'express';
 import { PdfService } from './pdf.service';
-import { GeneratePdfDto } from './dto/generate-pdf.dto';
 
 @Controller('pdf')
 export class PdfController {
   constructor(private readonly pdfService: PdfService) {}
 
   @Post('generate')
-  async generatePdf(@Body() pdfData: GeneratePdfDto, @Res() res: Response): Promise<void> {
+  @UseInterceptors(FileFieldsInterceptor([
+    { name: 'chapterLogo', maxCount: 1 },
+    { name: 'members', maxCount: 50 }, // Adjust maxCount based on your needs
+  ]))
+    // Add more fields for additional members if needed
+ 
+  async generatePdf(@Body() body, @UploadedFiles() files, @Res() res: Response) {
     try {
-      // Debugging: log the pdfData object
-      console.log('Received pdfData:', pdfData);
+      const { chapterName, location, memberSize, regionalRank, allIndiaRank, globalRank } = body;
+      const members = JSON.parse(body.members);
 
+      // Process the uploaded files
+      const chapterLogo = files.chapterLogo ? files.chapterLogo[0] : null;
+      members.forEach((member, index) => {
+        member.memberPhoto = files[`members[${index}][memberPhoto]`] ? files[`members[${index}][memberPhoto]`][0] : null;
+        member.companyPhoto = files[`members[${index}][companyPhoto]`] ? files[`members[${index}][companyPhoto]`][0] : null;
+      });
+
+      // Generate the PDF
       const pdfPath = await this.pdfService.generatePdf(
-        pdfData.chapterName,
-        pdfData.location,
-        pdfData.memberSize,
-        pdfData.regionalRank,
-        pdfData.allIndiaRank,
-        pdfData.globalRank,
-        pdfData.members
+        chapterName,
+        location,
+        memberSize,
+        regionalRank,
+        allIndiaRank,
+        globalRank,
+        members,
+        chapterLogo
       );
+      
 
+      // Send the PDF to the client
       res.download(pdfPath, 'bni_roster.pdf', (err) => {
         if (err) {
           console.error('Error sending PDF:', err);
@@ -38,4 +55,5 @@ export class PdfController {
       throw new HttpException('Error generating PDF', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
+  
 }

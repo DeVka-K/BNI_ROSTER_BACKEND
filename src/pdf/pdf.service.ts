@@ -4,10 +4,20 @@ import { Injectable } from '@nestjs/common';
 import * as PDFDocument from 'pdfkit';
 import * as fs from 'fs';
 import * as path from 'path';
+import { Multer } from 'multer';
 
 @Injectable()
 export class PdfService {
-  async generatePdf(chapterName: string, location: string, memberSize: string, regionalRank: string, allIndiaRank: string, globalRank: string, members: any[]): Promise<string> {
+  async generatePdf(
+    chapterName: string,
+    location: string,
+    memberSize: string,
+    regionalRank: string,
+    allIndiaRank: string,
+    globalRank: string,
+    members: any[],
+    chapterLogo: Express.Multer.File,
+  ): Promise<string> {
     const doc = new PDFDocument({
       size: 'A4',
       margin: 0,
@@ -17,9 +27,10 @@ export class PdfService {
     const writeStream = fs.createWriteStream(pdfPath);
     doc.pipe(writeStream);
 
+
     // Chapter page
-    this.addChapterPage(doc, chapterName, location, memberSize, regionalRank, allIndiaRank, globalRank);
-    doc.addPage()
+    this.addChapterPage(doc, chapterName, location, memberSize, regionalRank, allIndiaRank, globalRank, chapterLogo);
+    doc.addPage();
 
     // Member pages
     this.addMemberPages(doc, members);
@@ -32,18 +43,27 @@ export class PdfService {
     });
   }
 
-  private addChapterPage(doc: PDFKit.PDFDocument, chapterName: string, location: string, memberSize: string, regionalRank: string, allIndiaRank: string, globalRank: string) {
+  private addChapterPage(
+    doc: PDFKit.PDFDocument,
+    chapterName: string,
+    location: string,
+    memberSize: string,
+    regionalRank: string,
+    allIndiaRank: string,
+    globalRank: string,
+    chapterLogo: Express.Multer.File 
+  ) {
     const backgroundPath = path.join(process.cwd(), 'src', 'assets', 'chapter_background.png');
     doc.image(backgroundPath, 0, 0, { width: doc.page.width, height: doc.page.height });
 
-    const pageCenter = (doc.page.width / 2) - 250; // Shifted 50 points to the left
+    const pageCenter = (doc.page.width / 2) - 250;
     const contentStartY = doc.page.height / 2 - 100;
 
     // BNI text (bold and centered)
     doc.font('Helvetica-Bold').fontSize(48).fillColor('#FF0000')
       .text('BNI', pageCenter, contentStartY, {
         align: 'center',
-        width: doc.page.width - 100 // Adjusted width to maintain centering
+        width: doc.page.width - 100
       });
 
     // Chapter name
@@ -59,17 +79,18 @@ export class PdfService {
         align: 'center',
         width: doc.page.width - 100
       });
-    // Logo
-    // const logoPath = path.join(process.cwd(), 'src', 'assets', 'company_logo.png');
-    // doc.image(logoPath, doc.page.width / 2 - 25, 390, { width: 50, height: 50 });
+
+    // Add chapter logo if available
+    if (chapterLogo) {
+      doc.image(chapterLogo.buffer, doc.page.width / 2 - 25, 390, { width: 50, height: 50 });
+    }
 
     // Bottom information
-    const bottomY = doc.page.height - 80; // Increased padding at the bottom
+    const bottomY = doc.page.height - 80;
     const cellWidth = doc.page.width / 5;
     const valueFontSize = 16;
     const labelFontSize = 12;
 
-    // Function to add cell with vertical line
     const addCell = (value: string, label: string, x: number, y: number, width: number) => {
       doc.fontSize(valueFontSize).fillColor('#FF0000').font('Helvetica-Bold');
       doc.text(value, x, y, { width, align: 'center' });
@@ -112,7 +133,7 @@ export class PdfService {
 
     members.forEach((member, index) => {
       const boxX = 50;
-      const boxY = 50 + index * 160; // Adjusted height between members
+      const boxY = 50 + index * 160;
       const boxWidth = doc.page.width - 100;
       const boxHeight = 140;
 
@@ -144,13 +165,15 @@ export class PdfService {
       doc.font('Helvetica-Bold').fontSize(14).fillColor('#cc0000');
       doc.text(`${member.category}`, startX, startY + lineHeight * 4);
 
-      // Company logo (move to the left side)
-      const logoPath = path.join(process.cwd(), 'src', 'assets', 'company_logo.png');
-      doc.image(logoPath, boxX + 140, startY, { width: 50, height: 50 });
+      // Company logo
+      if (member.companyPhoto) {
+        doc.image(member.companyPhoto.buffer, boxX + 140, startY, { width: 50, height: 50 });
+      }
 
-      // Member photo (move to the left side)
-      const photoPath = path.join(process.cwd(), 'src', 'assets', 'member_photo.png');
-      doc.image(photoPath, boxX + 190, startY, { width: 70, height: 70 });
+      // Member photo
+      if (member.memberPhoto) {
+        doc.image(member.memberPhoto.buffer, boxX + 190, startY, { width: 70, height: 70 });
+      }
 
       // Horizontal lines
       const lineStartX = boxX + boxWidth - 200;

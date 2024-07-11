@@ -1,0 +1,13 @@
+version: '3.9'
+
+services:
+  nestjs-backend:
+    build: .
+    ports:
+      - "4000:4000"
+    environment:
+      - NODE_ENV=production
+
+    volumes:
+      - .:/app
+      - /app/node_modules

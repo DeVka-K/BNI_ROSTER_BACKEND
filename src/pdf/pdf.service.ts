@@ -556,8 +556,8 @@ export class PDFService {
 
     return pdfPath;
   }
-
-  private addPageDesign(doc: PDFDocument) {
+// Have to change 
+  private addPageDesign(doc: PDFKit.PDFDocument) {
     const pageWidth = 595.28;
     const pageHeight = 841.89;
     const topBannerHeight = 40;
@@ -572,7 +572,7 @@ export class PDFService {
     doc.rect(0, topBannerHeight, pageWidth, pageHeight - topBannerHeight).fill('#FFFFFF');
   }
 
-  private addMemberToPDF(doc: PDFDocument, member: MemberData, index: number) {
+  private addMemberToPDF(doc: PDFKit.PDFDocument, member: MemberData, index: number) {
     const pageWidth = 595.28;
     const pageHeight = 841.89;
     const margin = 20;

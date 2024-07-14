@@ -12,7 +12,10 @@ export class JsonService {
   async create(createJsonDto: CreateJsonDto) {
     const data = this.parseJson(createJsonDto.file);
     const pdfId = uuidv4();
-    await this.pdfService.generatePDF(data, pdfId);
+    const status="isjson";
+    console.log("jsonstatus ",status);
+    
+    await this.pdfService.generatePDF(data, pdfId,status);
     return { pdfId };
   }
 

@@ -1,4 +1,4 @@
-import { IsString, IsNumber, IsArray, ValidateNested, IsOptional } from 'class-validator';
+import { IsString, IsInt, IsArray, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 
 class MemberDto {
@@ -17,9 +17,17 @@ class MemberDto {
   @IsString()
   category: string;
 
-  @IsOptional()
   @IsString()
-  companyLogo?: string;
+  companyLogo: string;
+
+
+  @IsString()
+  photo: string;
+
+
+
+
+
 }
 
 export class ChapterDataDto {
@@ -29,20 +37,21 @@ export class ChapterDataDto {
   @IsString()
   location: string;
 
-  @IsNumber()
+  @IsInt()
   memberSize: number;
 
-  @IsNumber()
+  @IsInt()
   regionalRank: number;
 
-  @IsNumber()
+  @IsInt()
   allIndiaRank: number;
 
-  @IsNumber()
+  @IsInt()
   globalRank: number;
 
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => MemberDto)
-  members: MemberDto[];
+  members: any;
 }
+

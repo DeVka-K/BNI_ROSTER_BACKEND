@@ -9,6 +9,7 @@ export class JsonConvertedHandler implements IEventHandler<JsonConvertedEvent> {
 
   async handle(event: JsonConvertedEvent) {
     const pdfId = uuidv4();
-    await this.pdfService.generatePDF(event.chapterData, pdfId);
+    const status="isjson"
+    await this.pdfService.generatePDF(event.chapterData, pdfId,status);
   }
 }

@@ -207,7 +207,10 @@ export class CsvService {
   async create(createCsvDto: CreateCsvDto) {
     const data = await this.parseCsv(createCsvDto.file);
     const pdfId = uuidv4();
-    await this.pdfService.generatePDF(data, pdfId);
+    const status="iscsv";
+    console.log("csv status",status);
+    
+    await this.pdfService.generatePDF(data, pdfId,status);
     return { pdfId };
   }
  

@@ -163,6 +163,8 @@ export class PDFService {
     const lineLength = 150;
     const lineYStart = y;
     const lineSpacing = imageSize / 5;
+
+    
     doc.lineWidth(0.1);
     for (let i = 0; i < 5; i++) {
       const lineY = lineYStart + i * lineSpacing;

@@ -24,6 +24,7 @@ export class CsvConvertedHandler implements IEventHandler<CsvConvertedEvent> {
  
   async handle(event: CsvConvertedEvent) {
     const pdfId = uuidv4();
-    await this.pdfService.generatePDF(event.chapterData, pdfId);
+    const status="iscsv"
+    await this.pdfService.generatePDF(event.chapterData, pdfId,status);
   }
 }

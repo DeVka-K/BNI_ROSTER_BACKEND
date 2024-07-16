@@ -1,4 +1,5 @@
-//final code
+
+
 import { Injectable } from '@nestjs/common';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -8,7 +9,7 @@ import { ChapterData, MemberData } from '../shared/interfaces/chapter-data.inter
 
 @Injectable()
 export class PDFService {
-  async generatePDF(data: ChapterData, pdfId: string): Promise<string> {
+  async generatePDF(data: ChapterData, pdfId: string,status:string): Promise<string> {
     const pdfPath = path.join(__dirname, '..', '..', 'uploads', `${pdfId}.pdf`);
     const doc = new PDFDocument();
     const stream = fs.createWriteStream(pdfPath);
@@ -28,13 +29,33 @@ export class PDFService {
     // Add chapter name below the BNI logo
     doc.fontSize(50).fillColor('black').text(data.chapterName, 50, 480, { align: 'center' });
 
-    // Add chapter logo below the chapter name
-    if (data.chapterLogo) {
-      const chapterLogoPath = path.join(__dirname, '..', '..', 'uploads', 'images', data.chapterLogo);
-      doc.image(chapterLogoPath, (doc.page.width - 100) / 2, 530, { width: 100, height: 100 });
-      console.log(`Adding chapter logo from ${chapterLogoPath}`);
-    }
 
+    console.log("status in pdf service ",status);
+
+
+    if(status=="isform"){
+      if (data.chapterLogo) {
+        const chapterLogoPath = path.join(__dirname, '..', '..', data.chapterLogo);
+        doc.image(chapterLogoPath, (doc.page.width - 100) / 2, 530, { width: 100, height: 100 });
+        console.log(`Adding chapter logo from ${chapterLogoPath}`);
+      }
+  
+
+    }
+    else{
+      if (data.chapterLogo) {
+        const chapterLogoPath = path.join(__dirname, '..', '..','uploads','images', data.chapterLogo);
+        doc.image(chapterLogoPath, (doc.page.width - 100) / 2, 530, { width: 100, height: 100 });
+        console.log(`Adding chapter logo from ${chapterLogoPath}`);
+      }
+
+    }
+    
+
+
+    // Add chapter logo below the chapter name
+   
+  
    
     //bottom information
 
@@ -83,7 +104,7 @@ export class PDFService {
         doc.addPage();
         this.addPageDesign(doc);
       }
-      this.addMemberToPDF(doc, member, index % 6);
+      this.addMemberToPDF(doc, member, index % 6,status);
     });
 
     doc.end();
@@ -91,7 +112,7 @@ export class PDFService {
     return pdfPath;
   }
 // Have to change 
-  private addPageDesign(doc: PDFKit.PDFDocument) {
+  private addPageDesign(doc: PDFDocument) {
     const pageWidth = 595.28;
     const pageHeight = 841.89;
     const topBannerHeight = 40;
@@ -106,7 +127,9 @@ export class PDFService {
     doc.rect(0, topBannerHeight, pageWidth, pageHeight - topBannerHeight).fill('#FFFFFF');
   }
 
-  private addMemberToPDF(doc: PDFKit.PDFDocument, member: MemberData, index: number) {
+  private addMemberToPDF(doc: PDFDocument, member: MemberData, index: number,status:string) {
+    
+    
     const pageWidth = 595.28;
     const pageHeight = 841.89;
     const margin = 20;
@@ -145,20 +168,45 @@ export class PDFService {
     const logoX = textX + textWidth + 10;
     const photoX = logoX + imageSize + 10;
 
-    if (member.companyLogo) {
-      const logoPath = path.join(__dirname, '..', '..', 'uploads', 'images', member.companyLogo);
-      if (fs.existsSync(logoPath)) {
-        doc.image(logoPath, logoX, imageY, { width: imageSize, height: imageSize });
-      }
-    }
-    if (member.photo) {
-      const photoPath = path.join(__dirname, '..', '..', 'uploads', 'images', member.photo);
-      if (fs.existsSync(photoPath)) {
-        doc.image(photoPath, photoX, imageY, { width: imageSize, height: imageSize });
-      }
-    }
+    console.log("hjdbausdauyba",member);
+    console.log("status",status);
 
-    // Add horizontal lines for notes
+
+    console.log("status", status);
+
+    if (status === "isform") {
+      if (member.companyLogo) {
+        const logoPath = path.join(__dirname, '..', '..', member.companyLogo);
+        if (fs.existsSync(logoPath)) {
+          doc.image(logoPath, logoX, imageY, { width: imageSize, height: imageSize });
+        }
+      }
+    } else {
+      if (member.companyLogo) {
+        const logoPath = path.join(__dirname, '..', '..', 'uploads', 'images', member.companyLogo);
+        if (fs.existsSync(logoPath)) {
+          doc.image(logoPath, logoX, imageY, { width: imageSize, height: imageSize });
+        }
+      }
+    }
+    
+  if (status === "isform") {
+        if (member.photo) {
+          const photoPath = path.join(__dirname, '..', '..', member.photo);
+          if (fs.existsSync(photoPath)) {
+            doc.image(photoPath, photoX, imageY, { width: imageSize, height: imageSize });
+          }
+        }
+      } else {
+        if (member.photo) {
+          const photoPath = path.join(__dirname, '..', '..', 'uploads', 'images', member.photo);
+          if (fs.existsSync(photoPath)) {
+            doc.image(photoPath, photoX, imageY, { width: imageSize, height: imageSize });
+          }
+        }
+      }
+      
+ // Add horizontal lines for notes
     const lineXStart = photoX + imageSize + 20;
     const lineLength = 150;
     const lineYStart = y;

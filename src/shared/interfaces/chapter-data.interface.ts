@@ -6,7 +6,7 @@ export interface ChapterData {
     allIndiaRank: number;
     globalRank: number;
     chapterLogo: string;
-    members: MemberData[];
+    members:any;
   }
   
   export interface MemberData {

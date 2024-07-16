@@ -28,7 +28,10 @@ export class ExcelService {
   async create(createExcelDto: CreateExcelDto) {
     const data = await this.parseExcel(createExcelDto.file);
     const pdfId = uuidv4();
-    await this.pdfService.generatePDF(data, pdfId);
+    const status="isexcel";
+    console.log("excel status",status);
+    
+    await this.pdfService.generatePDF(data, pdfId,status);
     return { pdfId };
   }
 

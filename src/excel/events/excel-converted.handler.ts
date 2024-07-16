@@ -23,6 +23,7 @@ export class ExcelConvertedHandler implements IEventHandler<ExcelConvertedEvent>
 
   async handle(event: ExcelConvertedEvent) {
     const pdfId = uuidv4();
-    await this.pdfService.generatePDF(event.chapterData, pdfId);
+    const status="isexcel"
+    await this.pdfService.generatePDF(event.chapterData, pdfId,status);
   }
 }

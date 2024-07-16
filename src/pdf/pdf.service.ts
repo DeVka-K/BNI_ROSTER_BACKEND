@@ -101,6 +101,8 @@ export class PDFService {
 
     data.members.forEach((member, index) => {
       if (index > 0 && index % 6 === 0) {
+        
+        
         doc.addPage();
         this.addPageDesign(doc);
       }
@@ -116,6 +118,7 @@ export class PDFService {
     const pageWidth = 595.28;
     const pageHeight = 841.89;
     const topBannerHeight = 40;
+    
 
     // Red banner at the top
     doc.rect(0, 0, pageWidth, topBannerHeight).fill('#FF0000');

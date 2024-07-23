@@ -24,7 +24,8 @@ export class PDFService {
 
     // Add BNI logo in the center at the top
     const bniLogoPath = path.join(__dirname, '..', '..', 'assets', 'bnilogo3.png'); // Update this path to your actual BNI logo path
-    doc.image(bniLogoPath, (doc.page.width - 200) / 2, 300, { width: 200, height: 150 });
+    doc.image(bniLogoPath,135, 300, { width: 350, height: 150 });
+    // (doc.page.width - 200) / 2
 
     // Add chapter name below the BNI logo
     doc.fontSize(50).fillColor('black').text(data.chapterName, 50, 480, { align: 'center' });
@@ -99,22 +100,28 @@ export class PDFService {
     doc.addPage();
     this.addPageDesign(doc);
 
-    data.members.forEach((member, index) => {
-      if (index > 0 && index % 6 === 0) {
-        
-        
+   
+    let continuousIndex = 0;
+    const membersPerPage = 6;
+ 
+    for (let i = 0; i < data.members.length; i++) {
+      if (i > 0 && i % membersPerPage === 0) {
         doc.addPage();
         this.addPageDesign(doc);
+        continuousIndex = i; // Reset continuousIndex at the start of each new page
       }
-      this.addMemberToPDF(doc, member, index % 6,status);
-    });
+ 
+      const pageIndex = i % membersPerPage;
+      this.addMemberToPDF(doc, data.members[i], continuousIndex,status);
+      continuousIndex++
+    }
+      doc.end()
 
-    doc.end();
 
     return pdfPath;
   }
 // Have to change 
-  private addPageDesign(doc:PDFKit. PDFDocument) {
+  private addPageDesign(doc:PDFDocument) {
     const pageWidth = 595.28;
     const pageHeight = 841.89;
     const topBannerHeight = 40;
@@ -130,25 +137,46 @@ export class PDFService {
     doc.rect(0, topBannerHeight, pageWidth, pageHeight - topBannerHeight).fill('#FFFFFF');
   }
 
-  private addMemberToPDF(doc:PDFKit. PDFDocument, member: MemberData, index: number,status:string) {
+  // private addMemberToPDF(doc:PDFKit.PDFDocument, member: MemberData, index: number,status:string) {
     
     
+  //   const pageWidth = 595.28;
+  //   const pageHeight = 841.89;
+  //   const margin = 20;
+  //   const topBannerHeight = 40;
+  //   const cardSpacing = 10;
+  //   const cardHeight = (pageHeight - 2 * margin - topBannerHeight - 6 * cardSpacing) / 7;
+
+  //   const x = margin;
+  //   const y = margin + topBannerHeight + (index % 6) * (cardHeight + cardSpacing);
+
+  //   // Add smaller number box
+  //   const numberBoxWidth = 25;
+  //   const numberBoxHeight = 25;
+  //   doc.rect(x, y, numberBoxWidth, numberBoxHeight).fill('#FF0000');
+  //   doc.fill('#FFFFFF').fontSize(14).font('Helvetica-Bold');
+  //   doc.text((index + 1).toString(), x, y + 6, {
+  //     width: numberBoxWidth,
+  //     align: 'center'
+  //   });
+  private addMemberToPDF(doc: PDFDocument, member: MemberData, continuousIndex: number,status:string) {
     const pageWidth = 595.28;
     const pageHeight = 841.89;
     const margin = 20;
     const topBannerHeight = 40;
     const cardSpacing = 10;
     const cardHeight = (pageHeight - 2 * margin - topBannerHeight - 6 * cardSpacing) / 7;
-
+ 
     const x = margin;
-    const y = margin + topBannerHeight + (index % 6) * (cardHeight + cardSpacing);
-
+    const y = margin + topBannerHeight + (continuousIndex % 6) * (cardHeight + cardSpacing);
+ 
     // Add smaller number box
     const numberBoxWidth = 25;
     const numberBoxHeight = 25;
+ 
     doc.rect(x, y, numberBoxWidth, numberBoxHeight).fill('#FF0000');
     doc.fill('#FFFFFF').fontSize(14).font('Helvetica-Bold');
-    doc.text((index + 1).toString(), x, y + 6, {
+    doc.text((continuousIndex + 1).toString(), x, y + 6, {
       width: numberBoxWidth,
       align: 'center'
     });

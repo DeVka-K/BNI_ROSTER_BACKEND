@@ -1,15 +1,4 @@
 
-
-
-
-
-
-
-
-
-
-
-
 import { CommandHandler, ICommandHandler, EventBus } from '@nestjs/cqrs';
 import { ConvertCsvCommand } from './convert-csv.command';
 import { CsvConvertedEvent } from '../events/csv-converted.event';
